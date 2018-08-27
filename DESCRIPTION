@@ -1,0 +1,14 @@
+Package: xslx2DIMA
+Type: Package
+Title: Format Excel for Ingestion into DIMA 
+Version: 0.1.0
+Author: c(person(given="Sarah", family="McCord", role=c("aut", "cre"), email="sarah.mccord@ars.usda.gov"),
+            person(given="Nelson", family="Stauffer", role="aut"))
+Maintainer: The package maintainer <sarah.mccord@ars.usda.gov>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: Creative Commons
+Encoding: UTF-8
+LazyData: true
+Imports: 
+RoxygenNote: 6.1.0
