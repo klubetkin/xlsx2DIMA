@@ -31,7 +31,7 @@ map.excel<-function(excel.file, reference.tall, field, format){
   } else if(any(is.na(cell.ref))){
     data<-NA
   } else if (field=="Date"){
-    data<-tryCatch(readxl::read_excel(path=excel.file, sheet=format, range=cell.ref, col_types = "date", col_names=FALSE)[[1]]%>% as.character, error=function(e) return(NA))
+    data<-tryCatch(readxl::read_excel(path=excel.file,sheet=format, range=cell.ref, col_types = "date", col_names=FALSE)[[1]]%>% as.character, error=function(e) return(NA))
   } else{
     #Define rows
     #rows<-gsub(pattern="[[:alpha:]]", "", x=cell.ref)%>% unique()%>%
