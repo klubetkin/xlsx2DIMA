@@ -32,15 +32,24 @@ map.excel<-function(excel.file, reference.tall, field, format){
     data<-NA
   } else if (field=="Date"){
     data<-tryCatch(readxl::read_excel(path=excel.file,sheet=format, range=cell.ref, col_types = "date", col_names=FALSE)[[1]]%>% as.character, error=function(e) return(NA))
-  } else{
+  } else if (substr(field,1,3)=="Chk"){
     #Define rows
-    #rows<-gsub(pattern="[[:alpha:]]", "", x=cell.ref)%>% unique()%>%
-    #  strsplit(., split = ":")%>% unlist()%>% as.numeric
-    #rows<-seq(min(rows), max(rows))
-
-    #Define cells
-    #cols<-strsplit(cell.ref, split = ":")%>% unlist() %>% openxlsx::convertFromExcelRef() %>% unique()
-
+    rows<-gsub(pattern="[[:alpha:]]", "", x=cell.ref)%>% unique()%>%
+      strsplit(., split = ":")%>% unlist()%>% as.numeric
+    rows<-seq(min(rows), max(rows))
+    #Define columns
+    cols<-strsplit(cell.ref, split = ":")%>% unlist() %>% openxlsx::convertFromExcelRef() %>% unique()
+    #Read in row/column specific data from R
+    dataSheet<-loadWorkbook(excel.file)%>%getSheets()
+    dataSheet<-dataSheet[[format]]
+    dataCells<-list()
+    dataCells<-lapply(X=cols,FUN=function(X){
+      dataCells<-c(dataCells,getRows(dataSheet,rows)%>%getCells(colIndex=X))
+    })%>%unlist()
+    data<-lapply(X=dataCells,FUN=function(X){
+      getCellStyle(X)$getFont()$getBold()
+    })
+  } else{
     #Read in row/column specific data from R
     data<-tryCatch(lapply(X=cell.ref,FUN=function(X){
       readxl::read_excel(path=excel.file, sheet=format, range=(X), col_names=FALSE)%>%data.frame()}), warning=function(w) return(NA))
