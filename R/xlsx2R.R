@@ -69,14 +69,14 @@ map.excel<-function(excel.file, reference.tall, field, format){
 #'@export
 #'@rdname legacy.format
 
-build.header<-function(excel.file, reference.tall, format){
+build.header<-function(excel.file, reference.tall, format, verbose){
   #Build Header Data Frame
   header.fields<-reference.tall$FieldName[reference.tall$Table=="Header"&reference.tall$format==format]
 
   #Build Header Data Frame
   header.data<-data.frame(FieldName=header.fields,
                           value=sapply(X=header.fields, FUN=function(f=X){
-                            print(f)
+                            if(verbose = TRUE){print(f)}
                             data<-map.excel(excel.file = excel.file, format = format, reference.tall=reference.tall,field=f)
                             assign(paste(f), data)
 
@@ -93,12 +93,12 @@ build.header<-function(excel.file, reference.tall, format){
 #'@rdname legacy.format
 
 #Build Detail Table
-build.detail<-function(excel.file, reference.tall, format){
+build.detail<-function(excel.file, reference.tall, format, verbose){
   detail.fields<-reference.tall$FieldName[reference.tall$Table=="Detail"&reference.tall$format==format]
 
   #Build data frame
   detail.data<-lapply(X=detail.fields, FUN=function(f=X){
-    print(f)
+    if(verbose = TRUE){print(f)}
     df=data.frame(data=map.excel(excel.file = excel.file,  format = format, reference.tall=reference.tall,field=f)%>% as.character(),
                   FieldName=f) %>% dplyr::mutate(id=1:n(), excel.file=excel.file)
     df})%>%
@@ -122,7 +122,7 @@ build.detail<-function(excel.file, reference.tall, format){
 # }
 
 #Put it all together for an import function
-xlsx2R<-function(folder, reference, out){
+xlsx2R<-function(folder, reference, out, verbose = TRUE){
 
   #Build reference tall data frame
   reference.tall<-reference.tall(reference=reference)
@@ -145,8 +145,8 @@ xlsx2R<-function(folder, reference, out){
     if(length(format)>0){
       print(X)
       #Gather header and detail file
-      header<-build.header(excel.file=X,  reference.tall=reference.tall, format = format)
-      detail<-build.detail(excel.file=X,  reference.tall=reference.tall, format = format)
+      header<-build.header(excel.file=X,  reference.tall=reference.tall, format = format, verbose = verbose)
+      detail<-build.detail(excel.file=X,  reference.tall=reference.tall, format = format, verbose = verbose)
       #Join header and detail
       header.detail<-dplyr::left_join(header, detail) %>% dplyr::mutate(Format=format)
 
