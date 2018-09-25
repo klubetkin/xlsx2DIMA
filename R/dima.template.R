@@ -107,10 +107,8 @@ build.DIMA.template<-function(data, template.file, method, out.file){
                                   "EndLatitude"="EndLatitude(orNorthing)", "EndLongitude"="EndLongitude(orEasting)")     
 
     #Join to data
-    data.formatted.general<-dplyr::full_join(DIMA.template.general, data,
-                                            by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.general)]))
-    data.formatted.lines<-dplyr::full_join(DIMA.template.lines, data,
-                                            by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.lines)]))
+    data.formatted.general<-dplyr::full_join(DIMA.template.general, data)
+    data.formatted.lines<-dplyr::full_join(DIMA.template.lines, data)
 
     #Subset to fields in DIMA template
     data.formatted.general<-data.formatted.general[,colnames(data.formatted.general) %in% colnames(DIMA.template.general)]
