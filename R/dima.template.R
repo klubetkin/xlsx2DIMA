@@ -65,8 +65,7 @@ build.DIMA.template<-function(data, template.file, method, out.file){
                                             by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.header)]))
     data.formatted.detail.species<-dplyr::full_join(DIMA.template.detail.species, data,
                                             by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.detail.species)]))
-    data.formatted.detail.abundance<-dplyr::full_join(DIMA.template.detail.abundance, data,
-                                            by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.detail.abundance)]))
+    data.formatted.detail.abundance<-dplyr::full_join(DIMA.template.detail.abundance, data)
 
     #Subset to fields in DIMA template
     data.formatted.header<-data.formatted.header[,colnames(data.formatted.header) %in% colnames(DIMA.template.header)]
@@ -79,7 +78,8 @@ build.DIMA.template<-function(data, template.file, method, out.file){
     names(data.formatted.detail.abundance)<-template.names.detail.abundance
     
     #Create list
-    data.formatted<-list("SpecRich SubPlots"=data.formatted.header, "SubPlot Species"=data.formatted.detail.species, "Species Abundance"=data.formatted.abundance)
+    data.formatted<-list("SpecRich SubPlots"=data.formatted.header, "SubPlot Species"=data.formatted.detail.species, 
+                         "Species Abundance"=data.formatted.detail.abundance)
 
     #Write out detail table
     openxlsx::write.xlsx(x = data.formatted, file=out.file)
