@@ -13,8 +13,8 @@
 #Read DIMA.template file
 build.DIMA.template<-function(data, template.file, method, out.file){
 
-  #If it is a line based method
-  if(method %in% c("LPI", "Gap")){
+  #If it is a line based method, or plot history
+  if(method %in% c("LPI", "Gap", "History")){
     #Read DIMA template
     DIMA.template<-readxl::read_excel(template.file, col_types = "text")
 
@@ -24,10 +24,12 @@ build.DIMA.template<-function(data, template.file, method, out.file){
     #Update the LPI Template Names (e.g., remove spaces)
     names(DIMA.template)<-names(DIMA.template) %>% gsub(pattern=" ", replacement = "")
 
-    #Fix Date field so it is R friendly
-    DIMA.template<-dplyr::rename(DIMA.template, "Date"="Date(mm/dd/yyyy)")
-    DIMA.template<-dplyr::rename(DIMA.template, "LineLength"="LineLength(m)", "InterceptInterval"="InterceptInterval(m)")
-
+    #Fix fields with parentheses so they are R friendly
+    if(method %in% c("LPI", "Gap")){
+      DIMA.template<-dplyr::rename(DIMA.template, "Date"="Date(mm/dd/yyyy)")
+      DIMA.template<-dplyr::rename(DIMA.template, "LineLength"="LineLength(m)", "InterceptInterval"="InterceptInterval(m)")
+    }
+    
     #Join to data
     data.formatted<-dplyr::full_join(DIMA.template, data)
 
@@ -37,12 +39,13 @@ build.DIMA.template<-function(data, template.file, method, out.file){
     #Add the Excel formatted names back in
     names(data.formatted)<-template.names
 
+    #Write out detail table
     openxlsx::write.xlsx(x = data.formatted, file = out.file)
 
-    }
+  }
   #If it is the species richness method
   if(method %in% "Richness"){
-    ###Build DIMA Template Tables
+    ###Read DIMA template
     DIMA.template.header<-readxl::read_excel(template.file, col_types = "text", sheet = "SpecRich SubPlots")
     DIMA.template.detail.species<-readxl::read_excel(template.file, col_types = "text", sheet = "SubPlot Species")
     DIMA.template.detail.abundance<-readxl::read_excel(template.file, col_types = "text", sheet = "Species Abundance")
@@ -82,9 +85,49 @@ build.DIMA.template<-function(data, template.file, method, out.file){
     openxlsx::write.xlsx(x = data.formatted, file=out.file)
 
   }
+  #If it is the plot definition method
+  if(method %in% "Definition"){
+    ###Read DIMA template
+    DIMA.template.general<-readxl::read_excel(template.file, col_types = "text", sheet = "General")
+    DIMA.template.lines<-readxl::read_excel(template.file, col_types = "text", sheet = "Lines")
+    DIMA.template.soilpits<-readxl::read_excel(template.file, col_types = "text", sheet = "Soil Pits")
+    DIMA.template.horizons<-readxl::read_excel(template.file, col_types = "text", sheet = "Horizons")
+    
+    #Template names
+    template.names.general<-names(DIMA.template.general)
+    template.names.lines<-names(DIMA.template.lines)
 
+    #Update the Template Names (e.g., remove spaces)
+    names(DIMA.template.general)<-names(DIMA.template.general) %>% gsub(pattern=" ", replacement = "")
+    names(DIMA.template.lines)<-names(DIMA.template.lines) %>% gsub(pattern=" ", replacement = "")
 
+    #Fix fields with parentheses so they are R friendly
+    DIMA.template.general<-dplyr::rename(DIMA.template.general, "Lat"="Lat(orNorthing)", "Long"="Long(or Easting)", "Zone"="Zone(ifUTM)")
+    DIMA.template.lines<-dplyr::rename(DIMA.template.lines, "StartLatitude"="StartLatitude(orNorthing)", "StartLongitude"="StartLongitude(orEasting)",
+                                  "EndLatitude"="EndLatitude(orNorthing)", "EndLongitude"="EndLongitude(orEasting)")     
 
+    #Join to data
+    data.formatted.general<-dplyr::full_join(DIMA.template.general, data,
+                                            by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.general)]))
+    data.formatted.lines<-dplyr::full_join(DIMA.template.lines, data,
+                                            by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.lines)]))
+
+    #Subset to fields in DIMA template
+    data.formatted.general<-data.formatted.general[,colnames(data.formatted.general) %in% colnames(DIMA.template.general)]
+    data.formatted.lines<-data.formatted.lines[,colnames(data.formatted.lines) %in% colnames(DIMA.template.lines)]
+    
+    #Add the Excel formatted names back in
+    names(data.formatted.general)<-template.names.general
+    names(data.formatted.lines)<-template.names.lines
+    
+    #Create list
+    data.formatted<-list("General"=data.formatted.general, "Lines"=data.formatted.lines, "Soil Pits"=DIMA.template.soilpits, "Horizons"=DIMA.template.horizons)
+
+    #Write out detail table
+    openxlsx::write.xlsx(x = data.formatted, file=out.file)
+
+  }
+  
 }
 
 #'@export
