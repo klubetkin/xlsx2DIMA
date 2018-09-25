@@ -77,7 +77,7 @@ build.header<-function(excel.file, reference.tall, format, verbose){
   #Build Header Data Frame
   header.data<-data.frame(FieldName=header.fields,
                           value=sapply(X=header.fields, FUN=function(f=X){
-                            if(verbose = TRUE){print(f)}
+                            if(verbose == TRUE){print(f)}
                             data<-map.excel(excel.file = excel.file, format = format, reference.tall=reference.tall,field=f)
                             assign(paste(f), data)
 
@@ -99,7 +99,7 @@ build.detail<-function(excel.file, reference.tall, format, verbose){
 
   #Build data frame
   detail.data<-lapply(X=detail.fields, FUN=function(f=X){
-    if(verbose = TRUE){print(f)}
+    if(verbose == TRUE){print(f)}
     df=data.frame(data=map.excel(excel.file = excel.file,  format = format, reference.tall=reference.tall,field=f)%>% as.character(),
                   FieldName=f) %>% dplyr::mutate(id=1:n(), excel.file=excel.file)
     df})%>%
