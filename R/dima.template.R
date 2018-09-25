@@ -102,7 +102,7 @@ build.DIMA.template<-function(data, template.file, method, out.file){
     names(DIMA.template.lines)<-names(DIMA.template.lines) %>% gsub(pattern=" ", replacement = "")
 
     #Fix fields with parentheses so they are R friendly
-    DIMA.template.general<-dplyr::rename(DIMA.template.general, "Lat"="Lat(orNorthing)", "Long"="Long(or Easting)", "Zone"="Zone(ifUTM)")
+    DIMA.template.general<-dplyr::rename(DIMA.template.general, "Lat"="Lat(orNorthing)", "Long"="Long(orEasting)", "Zone"="Zone(ifUTM)")
     DIMA.template.lines<-dplyr::rename(DIMA.template.lines, "StartLatitude"="StartLatitude(orNorthing)", "StartLongitude"="StartLongitude(orEasting)",
                                   "EndLatitude"="EndLatitude(orNorthing)", "EndLongitude"="EndLongitude(orEasting)")     
 
