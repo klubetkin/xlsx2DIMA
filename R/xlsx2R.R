@@ -3,11 +3,12 @@
 #'@param excel.file An Excel of a blank DIMA template
 #'@param format Format type, as identified in the reference lookup table
 #'@param reference Reference lookup table filepath which identifies excel file formats and corresponding field map
+#'@param verbose Boolean to turn on/off printing every field name
 #'@name legacy.format
 #'@return A \code {tbl} of all method data in a directory formatted for joining to the DIMA.template.
 #'@export
 #'@rdname legacy.format
-#'
+#
 #Make reference tall format
 reference.tall<-function(reference){
   #Read reference file
