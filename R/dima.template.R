@@ -13,7 +13,7 @@
 #Read DIMA.template file
 build.DIMA.template<-function(data, template.file, method, out.file){
 
-  #If it is a line based method, fix a few other field names
+  #If it is a line based method
   if(method %in% c("LPI", "Gap")){
     #Read DIMA template
     DIMA.template<-readxl::read_excel(template.file, col_types = "text")
@@ -40,48 +40,43 @@ build.DIMA.template<-function(data, template.file, method, out.file){
     openxlsx::write.xlsx(x = data.formatted, file = out.file)
 
     }
-  #If this is the method
+  #If it is the species richness method
   if(method %in% "Richness"){
-    ###Build DIMA Header Table
+    ###Build DIMA Template Tables
     DIMA.template.header<-readxl::read_excel(template.file, col_types = "text", sheet = "SpecRich SubPlots")
+    DIMA.template.detail.species<-readxl::read_excel(template.file, col_types = "text", sheet = "SubPlot Species")
+    DIMA.template.detail.abundance<-readxl::read_excel(template.file, col_types = "text", sheet = "Species Abundance")
+    
     #Template names
     template.names.header<-names(DIMA.template.header)
+    template.names.detail.species<-names(DIMA.template.detail.species)
+    template.names.detail.abundance<-names(DIMA.template.detail.abundance)
 
-    #Update the  Template Names (e.g., remove spaces)
+    #Update the Template Names (e.g., remove spaces)
     names(DIMA.template.header)<-names(DIMA.template.header) %>% gsub(pattern=" ", replacement = "")
+    names(DIMA.template.detail.species)<-names(DIMA.template.detail.species) %>% gsub(pattern=" ", replacement = "")
+    names(DIMA.template.detail.abundance)<-names(DIMA.template.detail.abundance) %>% gsub(pattern=" ", replacement = "")
 
      #Join to data
     data.formatted.header<-dplyr::full_join(DIMA.template.header, data,
                                             by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.header)]))
+    data.formatted.detail.species<-dplyr::full_join(DIMA.template.detail.species, data,
+                                            by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.detail.species)]))
+    data.formatted.detail.abundance<-dplyr::full_join(DIMA.template.detail.abundance, data,
+                                            by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.detail.abundance)]))
 
     #Subset to fields in DIMA template
     data.formatted.header<-data.formatted.header[,colnames(data.formatted.header) %in% colnames(DIMA.template.header)]
+    data.formatted.detail.species<-data.formatted.detail.species[, colnames(data.formatted.detail.species) %in% colnames(DIMA.template.detail.species)]
+    data.formatted.detail.abundance<-data.formatted.detail.abundance[, colnames(data.formatted.detail.abundance) %in% colnames(DIMA.template.detail.abundance)]
 
     #Add the Excel formatted names back in
     names(data.formatted.header)<-template.names.header
-
-    ###Build DIMA Detail Table
-
-    DIMA.template.detail<-readxl::read_excel(template.file, col_types = "text", sheet = "SubPlot Species")
-    #Template names
-    template.names.detail<-names(DIMA.template.detail)
-
-    #Update the  Template Names (e.g., remove spaces)
-    names(DIMA.template.detail)<-names(DIMA.template.detail) %>% gsub(pattern=" ", replacement = "")
-
-
-    #Join to data
-    data.formatted.detail<-dplyr::full_join(DIMA.template.detail, data,
-                                            by=c(`SubPlot#`="SubPlot.", colnames(data)[colnames(data) %in% colnames(DIMA.template.detail)]))
-
-    #Subset to fields in DIMA template
-    data.formatted.detail<-data.formatted.detail[, colnames(data.formatted.detail) %in% colnames(DIMA.template.detail)]
-
-    #Add the Excel formatted names back in
-    names(data.formatted.detail)<-template.names.detail
-
+    names(data.formatted.detail.species)<-template.names.detail.species
+    names(data.formatted.detail.abundance)<-template.names.detail.abundance
+    
     #Create list
-    data.formatted<-list("SpecRich SubPlots"=data.formatted.header, "SubPlot Species"=data.formatted.detail)
+    data.formatted<-list("SpecRich SubPlots"=data.formatted.header, "SubPlot Species"=data.formatted.detail.species, "Species Abundance"=data.formatted.abundance)
 
     #Write out detail table
     openxlsx::write.xlsx(x = data.formatted, file=out.file)
