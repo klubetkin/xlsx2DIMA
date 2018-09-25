@@ -30,9 +30,9 @@ map.excel<-function(excel.file, reference.tall, field, format){
     data<-cell.ref
   } else if(any(is.na(cell.ref))){
     data<-NA
-  } else if (field=="Date"){
+  } else if (field%in%c("Date","EstablishDate")){
     data<-tryCatch(readxl::read_excel(path=excel.file,sheet =format,range=cell.ref, col_types = "date", col_names=FALSE)[[1]]%>% as.character, error=function(e) return(NA))
-  } else{
+  } else if (substr(field,1,6)=="Chkbox"){
     #Define rows
     rows<-gsub(pattern="[[:alpha:]]", "", x=cell.ref)%>% unique()%>%
       strsplit(., split = ":")%>% unlist()%>% as.numeric
@@ -40,10 +40,26 @@ map.excel<-function(excel.file, reference.tall, field, format){
 
     #Define cells
     cols<-strsplit(cell.ref, split = ":")%>% unlist() %>% openxlsx::convertFromExcelRef() %>% unique()
+    
+    #Read in row/column specific data from R
+    dataSheet<-xlsx::loadWorkbook(excel.file)%>% getSheets()
+    dataSheet<-dataSheet[[format]]
+    dataCells<-list()
+    dataCells<-lapply(X=cols, FUN=function(X){
+      dataCells<-c(dataCells,getRows(dataSheet,rows)%>% getCells(colIndex=X))
+    })%>% unlist()
+    data<-lapply(X=dataCells,FUN=function(X){
+      getCellStyle(X)$getFont()$getBold()
+     })
+  } else{
 
     #Read in row/column specific data from R
-    data<-tryCatch(openxlsx::read.xlsx(excel.file, sheet=format, rows=rows, cols=cols, colNames=FALSE, skipEmptyRows=FALSE)%>% unlist(),
+    data<-tryCatch(lapply(X=cell.ref, FUN=function(X){readxl::read_excel(path=excel.file, sheet=format, range=X, col_names=FALSE)%>% data.frame()}), 
                    warning=function(w) return(NA))
+    data<-lapply(X=data,FUN=function(X){
+      if(!nrow(X)>0){X<-NA}
+      else{X<-X}
+    })%>% data.frame()%>% unlist()
   }
 
   return(data)
